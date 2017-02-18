@@ -1,0 +1,9 @@
+*.pyc
+*~
+*.swp
+
+app_dist/
+build/
+dist/
+
+
