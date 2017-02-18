@@ -9,6 +9,7 @@ import time
 import random
 from random import *
 from ExerciseGeneratorDlg import *
+
 ABOUT_INFO = u'''\
 自动出题程序
 将生成结果复制粘帖到Excel中排版
@@ -28,6 +29,11 @@ def generator():
     else:
         c = a - b
     ASSERT( 0 <= c <= MAX )
+    #return [ a, oper, b, '=', u'□' ]
+    #return [ '%s%s%s='% (a, oper, b) ] 
+    #return [ '%s%s%s='% (a, oper, b), c ] 
+    #return [ '%s%s%s'% (a, oper, b), '=', c ] 
+    #return [ a, oper, u'□', '=', c  ]
     return [ a, oper, b, '=', c ]
 ''',
 
@@ -42,8 +48,8 @@ def generator():
         oper = '<'
     else:
         oper = '='
+    #return [ a, u'○', b ]
     return [ a, oper, b ]
-
 ''',
 
 u'排序': u'''\
@@ -54,8 +60,8 @@ def generator():
     c = randint(MIN, MAX)
     d = randint(MIN, MAX)
     ASSERT( a < b < c < d )
+    #r=[a,b,c,d]; shuffle(r); return r
     return [ a, '<', b, '<', c, '<', d ]
-
 ''',
 
 u'生成随机数': u'''\
@@ -63,10 +69,30 @@ def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
     return [ a ]
-
 ''',
 
-
+u'连加连减': u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    oper1 = choice( ['-', '+'] ) 
+    oper2 = choice( ['-', '+'] ) 
+    if oper1 == '+':
+        ab = a + b
+    else:
+        ab = a - b
+    ASSERT( 0 <= ab <= MAX )
+    if oper2 == '+':
+        d = ab + c
+    else:
+        d = ab - c 
+    ASSERT( 0 <= d <= MAX )
+    #return [ '%s%s%s%s%s=%s'% (a, oper1, b, oper2, c, d) ]
+    #return [ '%s%s%s%s%s='% (a, oper1, b, oper2, c) ]
+    return [ a, oper1, b, oper2, c, '=', d ]
+''',
 
 }
 
@@ -112,10 +138,9 @@ class MainDialog(MyDialog):
 
     def addResult( self, line, result ):
         if self.grid_result.AppendRows():
-            #print line, result, len(result)
             for i in range(len(result)):
-                self.grid_result.SetCellValue( line-1, i, unicode(result[i]) )
-      
+                self.grid_result.SetCellValue( line-1, i, \
+                    unicode(result[i]) )
       
     def OnGenerate(self, event):
         self.label_info.SetLabel('')
@@ -149,7 +174,8 @@ class MainDialog(MyDialog):
         if lines:
             ret = []
             for l in range(lines):
-                items = [self.grid_result.GetCellValue( l, c ) for c in range(26)]
+                items = [self.grid_result.GetCellValue( l, c ) \
+                         for c in range(26)]
                 cp = '\t'.join(items).strip()
                 print cp
                 ret.append( cp )
@@ -169,7 +195,6 @@ class MainDialog(MyDialog):
 
 if __name__ == "__main__":
     gettext.install("app")
-    #freeze_support()
     app = wx.App(0)
     app.SetAppName( 'ExerciseGeneratorApp' )
     dialog_1 = MainDialog(None, wx.ID_ANY, "")
