@@ -7,10 +7,12 @@ import sys
 import math
 import time
 import random
+from random import *
 from ExerciseGeneratorDlg import *
 ABOUT_INFO = u'''\
 自动出题程序
 将生成结果复制粘帖到Excel中排版
+https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
 '''
 
@@ -18,9 +20,9 @@ CONFIGS = {
 u'加减法': u'''\
 def generator():
     MIN, MAX = 0, 100
-    a = random.randint(MIN, MAX)
-    b = random.randint(MIN, MAX)
-    oper = random.choice( ['-', '+'] ) 
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    oper = choice( ['-', '+'] ) 
     if oper == '+':
         c = a + b
     else:
@@ -32,8 +34,8 @@ def generator():
 u'比较大小': u'''\
 def generator():
     MIN, MAX = 0, 100
-    a = random.randint(MIN, MAX)
-    b = random.randint(MIN, MAX)
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
     if a > b:
         oper = '>'
     elif a < b:
@@ -47,15 +49,22 @@ def generator():
 u'排序': u'''\
 def generator():
     MIN, MAX = 0, 100
-    a = random.randint(MIN, MAX)
-    b = random.randint(MIN, MAX)
-    c = random.randint(MIN, MAX)
-    d = random.randint(MIN, MAX)
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    d = randint(MIN, MAX)
     ASSERT( a < b < c < d )
     return [ a, '<', b, '<', c, '<', d ]
 
 ''',
 
+u'生成随机数': u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    return [ a ]
+
+''',
 
 
 
