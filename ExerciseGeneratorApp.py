@@ -113,7 +113,7 @@ class MainDialog(MyDialog):
         self.button_copy_result.Enable(False)
         self.combo_box_type.SetValue(u'请选择出题类型...')
         self.combo_box_type.AppendItems(CONFIGS.keys()) 
-        self.spin_ctrl_number.SetValue(100)
+        self.text_ctrl_number.SetValue('100')
         self.clrAllResult()
 
     def OnClose(self, event):
@@ -121,7 +121,7 @@ class MainDialog(MyDialog):
         event.Skip()
 
     def OnSelectType(self, event):
-        self.label_info.SetLabel('')
+        self.info('')
         tp = self.combo_box_type.GetValue()
         if CONFIGS.has_key(tp):
             self.text_ctrl_rules.SetValue( CONFIGS[tp] )
@@ -141,18 +141,27 @@ class MainDialog(MyDialog):
             for i in range(len(result)):
                 self.grid_result.SetCellValue( line-1, i, \
                     unicode(result[i]) )
-      
+     
+    def info( self, info ):
+        self.label_info.SetLabel(info)
+ 
     def OnGenerate(self, event):
         self.label_info.SetLabel('')
         rules = self.text_ctrl_rules.GetValue()
-        num = self.spin_ctrl_number.GetValue()
+        try:
+            num = int(self.text_ctrl_number.GetValue())
+            if num <= 0 or num > 10000:
+                raise Exception
+        except:
+            self.info(u'数量错误')
+            return
         counter = 0
         try:
             code = compile(rules, '', 'exec')
             exec code
             generator
         except Exception, e:
-            self.label_info.SetLabel(str(e))
+            self.info(str(e))
             return
         self.clrAllResult()
         while counter < num:
@@ -163,13 +172,13 @@ class MainDialog(MyDialog):
             except AssertError:
                 pass
             except Exception, e:
-                self.label_info.SetLabel(str(e))
+                self.info(str(e))
                 return
         self.button_copy_result.Enable(True)
         event.Skip()
 
     def OnCopyResult(self, event):
-        self.label_info.SetLabel('')
+        self.info('')
         lines = self.grid_result.GetNumberRows()
         if lines:
             ret = []

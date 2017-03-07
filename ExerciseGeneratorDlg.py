@@ -21,7 +21,7 @@ class MyDialog(wx.Dialog):
         kwds["style"] = wx.DEFAULT_DIALOG_STYLE | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER
         wx.Dialog.__init__(self, *args, **kwds)
         self.combo_box_type = wx.ComboBox(self, wx.ID_ANY, choices=[], style=wx.CB_DROPDOWN | wx.CB_SORT)
-        self.spin_ctrl_number = wx.SpinCtrl(self, wx.ID_ANY, "1", min=0, max=100)
+        self.text_ctrl_number = wx.TextCtrl(self, wx.ID_ANY, _("100"))
         self.text_ctrl_rules = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
         self.label_info = wx.StaticText(self, wx.ID_ANY, "")
         self.button_generate = wx.Button(self, wx.ID_ANY, _(u"\u51fa\u9898"))
@@ -65,7 +65,7 @@ class MyDialog(wx.Dialog):
         sizer_6.Add((20, 20), 0, 0, 0)
         label_5 = wx.StaticText(self, wx.ID_ANY, _(u"\u6570\u91cf\uff1a"))
         sizer_6.Add(label_5, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-        sizer_6.Add(self.spin_ctrl_number, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, 0)
+        sizer_6.Add(self.text_ctrl_number, 0, 0, 0)
         sizer_5.Add(sizer_6, 0, wx.EXPAND, 0)
         sizer_5.Add((20, 20), 0, 0, 0)
         label_4 = wx.StaticText(self, wx.ID_ANY, _(u"\u89c4\u5219\u5b9a\u4e49\uff1a"))
