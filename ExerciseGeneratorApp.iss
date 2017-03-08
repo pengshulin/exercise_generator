@@ -1,7 +1,7 @@
 ﻿; Bearing monitor
 
 [Setup]
-AppName=自动出题机
+AppName=自动出题机 V1.1
 AppVersion=1.1
 DefaultDirName={pf}\ExerciseGenerator
 DefaultGroupName=自动出题机

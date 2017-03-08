@@ -12,9 +12,16 @@ from random import *
 from ExerciseGeneratorDlg import *
 
 ABOUT_INFO = u'''\
-自动出题程序 V1.1
+Python自动出题程序 V1.1
 将生成结果复制粘帖到Excel中排版
-https://github.com/pengshulin/exercise_generator
+
+规则说明：
+1. 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
+2. 用ASSERT函数筛除不符合规则的出题。
+3. random库的所有函数已导入，可直接使用。
+4. 支持unicode字符串，注意用前缀u标注。
+
+URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
 '''
 
