@@ -211,7 +211,7 @@ class MainDialog(MyDialog):
             for l in range(lines):
                 items = [self.grid_result.GetCellValue( l, c ) \
                          for c in range(26)]
-                cp = '\t'.join(items).strip()
+                cp = '\t'.join(items).rstrip()
                 print cp
                 ret.append( cp )
             copy = '\r\n'.join(ret)
