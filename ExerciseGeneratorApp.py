@@ -7,6 +7,7 @@ import sys
 import math
 import time
 import random
+import keyword
 from random import *
 from ExerciseGeneratorDlg import *
 
@@ -96,6 +97,11 @@ def generator():
 
 }
 
+
+
+
+
+
 class AssertError(Exception):
     pass
 
@@ -109,6 +115,7 @@ class MainDialog(MyDialog):
     def __init__(self, *args, **kwds):
         MyDialog.__init__( self, *args, **kwds )
         self.Bind(wx.EVT_CLOSE, self.OnClose, self)
+        self.init_text_ctrl_rules()
         self.button_generate.Enable(False)
         self.button_copy_result.Enable(False)
         self.combo_box_type.SetValue(u'请选择出题类型...')
@@ -119,7 +126,7 @@ class MainDialog(MyDialog):
     def OnClose(self, event):
         self.Destroy()
         event.Skip()
-
+        
     def OnSelectType(self, event):
         self.info('')
         tp = self.combo_box_type.GetValue()
@@ -198,7 +205,78 @@ class MainDialog(MyDialog):
         dlg.ShowModal()
         dlg.Destroy()
  
-   
+    def init_text_ctrl_rules(self):
+        ctrl = self.text_ctrl_rules
+        faces = { 'times': 'Courier New',
+                  'mono' : 'Courier New',
+                  'helv' : 'Courier New',
+                  'other': 'Courier New',
+                  'size' : 12,
+                  'size2': 10,
+                }
+        ctrl.SetLexer(wx.stc.STC_LEX_PYTHON)
+        ctrl.SetKeyWords(0, " ".join(keyword.kwlist))
+        ctrl.SetProperty("tab.timmy.whinge.level", "1")
+        ctrl.SetMargins(0,0)
+        ctrl.SetViewWhiteSpace(False)
+        ctrl.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleClearAll()
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "back:#C0C0C0,face:%(helv)s,size:%(size2)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "fore:#FFFFFF,back:#0000FF,bold")
+        ctrl.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "fore:#000000,back:#FF0000,bold")
+        ctrl.StyleSetSpec(wx.stc.STC_P_DEFAULT, "fore:#000000,face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_COMMENTLINE, "fore:#007F00,face:%(other)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_NUMBER, "fore:#007F7F,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_STRING, "fore:#7F007F,face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_CHARACTER, "fore:#7F007F,face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_WORD, "fore:#00007F,bold,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_TRIPLE, "fore:#7F0000,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_TRIPLEDOUBLE, "fore:#7F0000,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_CLASSNAME, "fore:#0000FF,bold,underline,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_DEFNAME, "fore:#007F7F,bold,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_OPERATOR, "bold,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, "fore:#000000,face:%(helv)s,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, "fore:#7F7F7F,size:%(size)d" % faces)
+        ctrl.StyleSetSpec(wx.stc.STC_P_STRINGEOL, "fore:#000000,face:%(mono)s,back:#E0C0E0,eol,size:%(size)d" % faces)
+        ctrl.SetCaretForeground("BLUE")
+        ctrl.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
+        ctrl.SetMarginWidth(1, 40)
+    
+
+    def OnUpdateUI(self, evt):
+        ctrl = self.text_ctrl_rules
+        # check for matching braces
+        braceAtCaret = -1
+        braceOpposite = -1
+        charBefore = None
+        caretPos = ctrl.GetCurrentPos()
+
+        if caretPos > 0:
+            charBefore = ctrl.GetCharAt(caretPos - 1)
+            styleBefore = ctrl.GetStyleAt(caretPos - 1)
+
+        # check before
+        if charBefore and chr(charBefore) in "[]{}()" and styleBefore == wx.stc.STC_P_OPERATOR:
+            braceAtCaret = caretPos - 1
+
+        # check after
+        if braceAtCaret < 0:
+            charAfter = ctrl.GetCharAt(caretPos)
+            styleAfter = ctrl.GetStyleAt(caretPos)
+
+            if charAfter and chr(charAfter) in "[]{}()" and styleAfter == wx.stc.STC_P_OPERATOR:
+                braceAtCaret = caretPos
+
+        if braceAtCaret >= 0:
+            braceOpposite = ctrl.BraceMatch(braceAtCaret)
+
+        if braceAtCaret != -1  and braceOpposite == -1:
+            ctrl.BraceBadLight(braceAtCaret)
+        else:
+            ctrl.BraceHighlight(braceAtCaret, braceOpposite)
 
 
 
