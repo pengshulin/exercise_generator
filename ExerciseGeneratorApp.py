@@ -20,6 +20,7 @@ Python自动出题程序 V1.1
 2. 用ASSERT函数筛除不符合规则的出题。
 3. random库的所有函数已导入，可直接使用。
 4. 支持unicode字符串，注意用前缀u标注。
+5. 当返回结果项为字符串“EOL”时，换行输出。
 
 URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
@@ -150,11 +151,22 @@ class MainDialog(MyDialog):
         if lines:
             self.grid_result.DeleteRows(numRows=lines)
 
-    def addResult( self, line, result ):
+    def addResult( self, result ):
         if self.grid_result.AppendRows():
-            for i in range(len(result)):
-                self.grid_result.SetCellValue( line-1, i, \
-                    unicode(result[i]) )
+            line = self.grid_result.GetNumberRows()
+            index = 0
+            for item in result:
+                if isinstance(item, str) and item == 'EOL':
+                    if self.grid_result.AppendRows():
+                        line += 1
+                        index = 0
+                    else:
+                        return 
+                else:
+                    self.grid_result.SetCellValue( line-1, index, unicode(item) )
+                    index += 1
+        else:
+            return
      
     def info( self, info ):
         self.label_info.SetLabel(info)
@@ -182,7 +194,7 @@ class MainDialog(MyDialog):
             try:
                 result = generator()
                 counter += 1 
-                self.addResult( counter, result )
+                self.addResult( result )
             except AssertError:
                 pass
             except Exception, e:
