@@ -4,7 +4,7 @@ import py2exe
 
 setup(
     name=u'Exercise Generator',
-    version='1.0',
+    version='1.1',
     description='automatically generate exercises',
     author='Peng Shulin',
     windows = [

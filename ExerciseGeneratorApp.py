@@ -12,7 +12,7 @@ from random import *
 from ExerciseGeneratorDlg import *
 
 ABOUT_INFO = u'''\
-自动出题程序
+自动出题程序 V1.1
 将生成结果复制粘帖到Excel中排版
 https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
