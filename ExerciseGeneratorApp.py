@@ -26,8 +26,15 @@ URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
 '''
 
-CONFIGS = {
-u'加减法': u'''\
+CONFIGS_LIST = [
+[u'生成随机数', u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    return [ a ]
+'''],
+
+[u'加减法（2个数）', u'''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -44,9 +51,19 @@ def generator():
     #return [ '%s%s%s'% (a, oper, b), '=', c ] 
     #return [ a, oper, u'□', '=', c  ]
     return [ a, oper, b, '=', c ]
-''',
+'''],
 
-u'比较大小': u'''\
+[u'乘法（2个数）', u'''\
+def generator():
+    MIN, MAX = 1, 10
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = a * b
+    ASSERT( 0 <= c <= 100 )
+    return [ a, '*', b, '=', c ]
+'''],
+
+[u'比较大小（2个数）', u'''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -59,28 +76,9 @@ def generator():
         oper = '='
     #return [ a, u'○', b ]
     return [ a, oper, b ]
-''',
+'''],
 
-u'排序': u'''\
-def generator():
-    MIN, MAX = 0, 100
-    a = randint(MIN, MAX)
-    b = randint(MIN, MAX)
-    c = randint(MIN, MAX)
-    d = randint(MIN, MAX)
-    ASSERT( a < b < c < d )
-    #r=[a,b,c,d]; shuffle(r); return r
-    return [ a, '<', b, '<', c, '<', d ]
-''',
-
-u'生成随机数': u'''\
-def generator():
-    MIN, MAX = 0, 100
-    a = randint(MIN, MAX)
-    return [ a ]
-''',
-
-u'连加连减': u'''\
+[u'连加连减（3个数）', u'''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -101,14 +99,121 @@ def generator():
     #return [ '%s%s%s%s%s=%s'% (a, oper1, b, oper2, c, d) ]
     #return [ '%s%s%s%s%s='% (a, oper1, b, oper2, c) ]
     return [ a, oper1, b, oper2, c, '=', d ]
-''',
+'''],
 
-}
+[u'三角分解', u'''\
+def generator():
+    MIN, MAX = 0, 20
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    ab = a + b
+    bc = b + c
+    ac = a + c
+    ASSERT( 0 <= ab <= MAX )
+    ASSERT( 0 <= bc <= MAX )
+    ASSERT( 0 <= ac <= MAX )
+    return [ 'EOL','EOL',ab,'',a,'',ac,'EOL','EOL','',b,'',c,'EOL','EOL','','',bc]
+'''],
 
 
+[u'数墙（3层）', u'''\
+def generator():
+    MIN, MAX = 0, 20
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    ab = a + b
+    bc = b + c
+    abc = ab + bc
+    ASSERT( 0 <= ab <= MAX )
+    ASSERT( 0 <= bc <= MAX )
+    ASSERT( 0 <= abc <= MAX )
+    return [ 'EOL','','',abc,'EOL','',ab,'',bc,'EOL',a,'',b,'',c]
+'''],
 
+[u'数墙（4层）', u'''\
+def generator():
+    MIN, MAX = 0, 20
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    d = randint(MIN, MAX)
+    ab = a + b
+    bc = b + c
+    cd = c + d
+    abc = ab + bc
+    bcd = bc + cd
+    abcd = abc + bcd
+    ASSERT( 0 <= ab <= MAX )
+    ASSERT( 0 <= bc <= MAX )
+    ASSERT( 0 <= cd <= MAX )
+    ASSERT( 0 <= abc <= MAX )
+    ASSERT( 0 <= bcd <= MAX )
+    ASSERT( 0 <= abcd <= MAX )
+    return [ 'EOL','','','',abcd,'EOL','','',abc,'',bcd,'EOL','',ab,'',bc,'',cd,'EOL',a,'',b,'',c,'',d]
+'''],
 
+[u'排序（4个数）', u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    d = randint(MIN, MAX)
+    ASSERT( a < b < c < d )
+    #r=[a,b,c,d]; shuffle(r); return r
+    return [ a, '<', b, '<', c, '<', d ]
+'''],
 
+[u'排序（5个数）', u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    c = randint(MIN, MAX)
+    d = randint(MIN, MAX)
+    e = randint(MIN, MAX)
+    ASSERT( a < b < c < d < e )
+    r=[a,b,c,d,e]; shuffle(r); s=','.join(map(str,r))
+    return [ s, '>'.join(['____']*5) ]
+'''],
+
+[u'算术题排序（5个算术题）', u'''\
+def generator():
+    MIN, MAX = 0, 20
+    def generate_single():
+        a, b = randint(MIN, MAX), randint(MIN, MAX)
+        return (a,b,a+b)
+     
+    a1, a2, a = generate_single()  
+    ASSERT( MIN <= a <= MAX )
+    b1, b2, b = generate_single()  
+    ASSERT( MIN <= b <= MAX )
+    ASSERT( b != a )
+    c1, c2, c = generate_single()  
+    ASSERT( MIN <= c <= MAX )
+    ASSERT( c not in [a,b] )
+    d1, d2, d = generate_single()  
+    ASSERT( MIN <= d <= MAX )
+    ASSERT( d not in [a,b,c] )
+    e1, e2, e = generate_single()  
+    ASSERT( MIN <= e <= MAX )
+    ASSERT( e not in [a,b,c,d] )
+
+    r=[[a1,a2],[b1,b2],[c1,c2],[d1,d2],[e1,e2]]
+    shuffle(r)
+    s=', '.join(['%s+%s'% (x,y) for x,y in r])
+    return [ s, '>'.join(['________']*5) ]
+'''],
+
+]
+
+CONFIGS_DICT = {}
+for k,v in CONFIGS_LIST:
+    CONFIGS_DICT[k] = v
+
+###############################################################################
 
 class AssertError(Exception):
     pass
@@ -127,7 +232,7 @@ class MainDialog(MyDialog):
         self.button_generate.Enable(False)
         self.button_copy_result.Enable(False)
         self.combo_box_type.SetValue(u'请选择出题类型...')
-        self.combo_box_type.AppendItems(CONFIGS.keys()) 
+        self.combo_box_type.AppendItems([c[0] for c in CONFIGS_LIST]) 
         self.text_ctrl_number.SetValue('100')
         self.clrAllResult()
 
@@ -138,8 +243,8 @@ class MainDialog(MyDialog):
     def OnSelectType(self, event):
         self.info('')
         tp = self.combo_box_type.GetValue()
-        if CONFIGS.has_key(tp):
-            self.text_ctrl_rules.SetValue( CONFIGS[tp] )
+        if CONFIGS_DICT.has_key(tp):
+            self.text_ctrl_rules.SetValue( CONFIGS_DICT[tp] )
             self.button_generate.Enable(True)
         else:
             self.button_generate.Enable(False)
@@ -212,7 +317,7 @@ class MainDialog(MyDialog):
                 items = [self.grid_result.GetCellValue( l, c ) \
                          for c in range(26)]
                 cp = '\t'.join(items).rstrip()
-                print cp
+                #print cp
                 ret.append( cp )
             copy = '\r\n'.join(ret)
             import pyperclip
@@ -260,7 +365,7 @@ class MainDialog(MyDialog):
         ctrl.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, "fore:#000000,face:%(helv)s,size:%(size)d" % faces)
         ctrl.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, "fore:#7F7F7F,size:%(size)d" % faces)
         ctrl.StyleSetSpec(wx.stc.STC_P_STRINGEOL, "fore:#000000,face:%(mono)s,back:#E0C0E0,eol,size:%(size)d" % faces)
-        ctrl.SetCaretForeground("BLUE")
+        ctrl.SetCaretForeground("YELLOW")
         ctrl.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         ctrl.SetMarginWidth(1, 40)
     
