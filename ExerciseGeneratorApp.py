@@ -13,7 +13,7 @@ from ExerciseGeneratorDlg import *
 
 ABOUT_INFO = u'''\
 Python自动出题程序 V1.1
-将生成结果复制粘帖到Excel中排版
+将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：
 1. 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
@@ -110,7 +110,6 @@ def generator():
     ab = a + b
     bc = b + c
     ac = a + c
-    ASSERT( 0 <= ab <= MAX )
     ASSERT( 0 <= bc <= MAX )
     ASSERT( 0 <= ac <= MAX )
     return [ 'EOL','EOL',ab,'',a,'',ac,'EOL','EOL','',b,'',c,'EOL','EOL','','',bc]
@@ -157,10 +156,9 @@ def generator():
 [u'排序（4个数）', u'''\
 def generator():
     MIN, MAX = 0, 100
-    a = randint(MIN, MAX)
-    b = randint(MIN, MAX)
-    c = randint(MIN, MAX)
-    d = randint(MIN, MAX)
+    lst = [randint(MIN, MAX) for i in range(4)]
+    lst.sort()
+    a, b, c, d = lst
     ASSERT( a < b < c < d )
     #r=[a,b,c,d]; shuffle(r); return r
     return [ a, '<', b, '<', c, '<', d ]
@@ -169,13 +167,11 @@ def generator():
 [u'排序（5个数）', u'''\
 def generator():
     MIN, MAX = 0, 100
-    a = randint(MIN, MAX)
-    b = randint(MIN, MAX)
-    c = randint(MIN, MAX)
-    d = randint(MIN, MAX)
-    e = randint(MIN, MAX)
+    lst = [randint(MIN, MAX) for i in range(5)]
+    lst.sort()
+    a, b, c, d, e = lst
     ASSERT( a < b < c < d < e )
-    r=[a,b,c,d,e]; shuffle(r); s=','.join(map(str,r))
+    r=[a,b,c,d,e]; shuffle(r); s=', '.join(map(str,r))
     return [ s, '>'.join(['____']*5) ]
 '''],
 
@@ -185,7 +181,7 @@ def generator():
     def generate_single():
         a, b = randint(MIN, MAX), randint(MIN, MAX)
         return (a,b,a+b)
-     
+
     a1, a2, a = generate_single()  
     ASSERT( MIN <= a <= MAX )
     b1, b2, b = generate_single()  
@@ -206,6 +202,24 @@ def generator():
     s=', '.join(['%s+%s'% (x,y) for x,y in r])
     return [ s, '>'.join(['________']*5) ]
 '''],
+
+[u'凑整数', u'''\
+def generator():
+    MIN, MAX = 0, 100
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    ASSERT( 1 <= b <= 9 )
+    #oper = choice( ['-', '+'] ) 
+    oper = '+'
+    if oper == '+':
+        c = a + b
+    else:
+        c = a - b
+    ASSERT( 10 <= c <= MAX )
+    ASSERT( c % 10 == 0 )
+    return [ a, oper, b, '=', c ]
+'''],
+
 
 ]
 
@@ -295,6 +309,7 @@ class MainDialog(MyDialog):
             self.info(str(e))
             return
         self.clrAllResult()
+        t0 = time.time()
         while counter < num:
             try:
                 result = generator()
@@ -305,6 +320,8 @@ class MainDialog(MyDialog):
             except Exception, e:
                 self.info(str(e))
                 return
+        t1 = time.time()
+        print 'time elapsed: %.1f seconds'% (t1-t0)
         self.button_copy_result.Enable(True)
         event.Skip()
 
@@ -365,7 +382,7 @@ class MainDialog(MyDialog):
         ctrl.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, "fore:#000000,face:%(helv)s,size:%(size)d" % faces)
         ctrl.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, "fore:#7F7F7F,size:%(size)d" % faces)
         ctrl.StyleSetSpec(wx.stc.STC_P_STRINGEOL, "fore:#000000,face:%(mono)s,back:#E0C0E0,eol,size:%(size)d" % faces)
-        ctrl.SetCaretForeground("YELLOW")
+        ctrl.SetCaretForeground("BLACK")
         ctrl.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         ctrl.SetMarginWidth(1, 40)
     
