@@ -287,18 +287,21 @@ class MainDialog(MyDialog):
         else:
             return
      
-    def info( self, info ):
-        self.label_info.SetLabel(info)
+    def info( self, info, info_type=wx.ICON_WARNING ):
+        if info:
+            self.window_info.ShowMessage(info, info_type)
+        else:
+            self.window_info.Dismiss()
  
     def OnGenerate(self, event):
-        self.label_info.SetLabel('')
+        self.info('')
         rules = self.text_ctrl_rules.GetValue()
         try:
             num = int(self.text_ctrl_number.GetValue())
             if num <= 0 or num > 10000:
                 raise Exception
         except:
-            self.info(u'数量错误')
+            self.info(u'数量错误', wx.ICON_ERROR)
             return
         counter = 0
         try:
@@ -306,7 +309,7 @@ class MainDialog(MyDialog):
             exec code
             generator
         except Exception, e:
-            self.info(str(e))
+            self.info(str(e), wx.ICON_ERROR)
             return
         self.clrAllResult()
         t0 = time.time()
