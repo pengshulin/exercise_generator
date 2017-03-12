@@ -276,7 +276,7 @@ class MainDialog(MyDialog):
             line = self.grid_result.GetNumberRows()
             index = 0
             for item in result:
-                if isinstance(item, str) and item == 'EOL':
+                if isinstance(item, unicode) and item == 'EOL':
                     if self.grid_result.AppendRows():
                         line += 1
                         index = 0
@@ -302,7 +302,7 @@ class MainDialog(MyDialog):
             if num <= 0 or num > 10000:
                 raise Exception
         except:
-            self.info('数量错误', wx.ICON_ERROR)
+            self.info('出题数量错误', wx.ICON_ERROR)
             return
         counter = 0
         try:
