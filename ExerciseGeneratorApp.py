@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
+from __future__ import unicode_literals
 import os
 import re
 import sys
@@ -11,7 +12,7 @@ import keyword
 from random import *
 from ExerciseGeneratorDlg import *
 
-ABOUT_INFO = u'''\
+ABOUT_INFO = '''\
 Python自动出题程序 V1.1
 将生成结果复制粘帖到Excel/WPS中排版
 
@@ -19,7 +20,7 @@ Python自动出题程序 V1.1
 1. 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
 2. 用ASSERT函数筛除不符合规则的出题。
 3. random库的所有函数已导入，可直接使用。
-4. 支持unicode字符串，注意用前缀u标注。
+5. 支持unicode字符串。
 5. 当返回结果项为字符串“EOL”时，换行输出。
 
 URL: https://github.com/pengshulin/exercise_generator
@@ -27,14 +28,14 @@ Peng Shullin <trees_peng@163.com> 2017
 '''
 
 CONFIGS_LIST = [
-[u'生成随机数', u'''\
+['生成随机数', '''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
     return [ a ]
 '''],
 
-[u'加减法（2个数）', u'''\
+['加减法（2个数）', '''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -45,15 +46,15 @@ def generator():
     else:
         c = a - b
     ASSERT( 0 <= c <= MAX )
-    #return [ a, oper, b, '=', u'□' ]
+    #return [ a, oper, b, '=', '□' ]
     #return [ '%s%s%s='% (a, oper, b) ] 
     #return [ '%s%s%s='% (a, oper, b), c ] 
     #return [ '%s%s%s'% (a, oper, b), '=', c ] 
-    #return [ a, oper, u'□', '=', c  ]
+    #return [ a, oper, '□', '=', c  ]
     return [ a, oper, b, '=', c ]
 '''],
 
-[u'乘法（2个数）', u'''\
+['乘法（2个数）', '''\
 def generator():
     MIN, MAX = 1, 10
     a = randint(MIN, MAX)
@@ -63,7 +64,7 @@ def generator():
     return [ a, '*', b, '=', c ]
 '''],
 
-[u'比较大小（2个数）', u'''\
+['比较大小（2个数）', '''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -74,11 +75,11 @@ def generator():
         oper = '<'
     else:
         oper = '='
-    #return [ a, u'○', b ]
+    #return [ a, '○', b ]
     return [ a, oper, b ]
 '''],
 
-[u'连加连减（3个数）', u'''\
+['连加连减（3个数）', '''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -101,7 +102,7 @@ def generator():
     return [ a, oper1, b, oper2, c, '=', d ]
 '''],
 
-[u'三角分解', u'''\
+['三角分解', '''\
 def generator():
     MIN, MAX = 0, 20
     a = randint(MIN, MAX)
@@ -116,7 +117,7 @@ def generator():
 '''],
 
 
-[u'数墙（3层）', u'''\
+['数墙（3层）', '''\
 def generator():
     MIN, MAX = 0, 20
     a = randint(MIN, MAX)
@@ -131,7 +132,7 @@ def generator():
     return [ 'EOL','','',abc,'EOL','',ab,'',bc,'EOL',a,'',b,'',c]
 '''],
 
-[u'数墙（4层）', u'''\
+['数墙（4层）', '''\
 def generator():
     MIN, MAX = 0, 20
     a = randint(MIN, MAX)
@@ -153,7 +154,7 @@ def generator():
     return [ 'EOL','','','',abcd,'EOL','','',abc,'',bcd,'EOL','',ab,'',bc,'',cd,'EOL',a,'',b,'',c,'',d]
 '''],
 
-[u'排序（4个数）', u'''\
+['排序（4个数）', '''\
 def generator():
     MIN, MAX = 0, 100
     lst = [randint(MIN, MAX) for i in range(4)]
@@ -164,7 +165,7 @@ def generator():
     return [ a, '<', b, '<', c, '<', d ]
 '''],
 
-[u'排序（5个数）', u'''\
+['排序（5个数）', '''\
 def generator():
     MIN, MAX = 0, 100
     lst = [randint(MIN, MAX) for i in range(5)]
@@ -175,7 +176,7 @@ def generator():
     return [ s, '>'.join(['____']*5) ]
 '''],
 
-[u'算术题排序（5个算术题）', u'''\
+['算术题排序（5个算术题）', '''\
 def generator():
     MIN, MAX = 0, 20
     def generate_single():
@@ -203,7 +204,7 @@ def generator():
     return [ s, '>'.join(['________']*5) ]
 '''],
 
-[u'凑整数', u'''\
+['凑整数', '''\
 def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
@@ -245,7 +246,7 @@ class MainDialog(MyDialog):
         self.init_text_ctrl_rules()
         self.button_generate.Enable(False)
         self.button_copy_result.Enable(False)
-        self.combo_box_type.SetValue(u'请选择出题类型...')
+        self.combo_box_type.SetValue('请选择出题类型...')
         self.combo_box_type.AppendItems([c[0] for c in CONFIGS_LIST]) 
         self.text_ctrl_number.SetValue('100')
         self.clrAllResult()
@@ -301,7 +302,7 @@ class MainDialog(MyDialog):
             if num <= 0 or num > 10000:
                 raise Exception
         except:
-            self.info(u'数量错误', wx.ICON_ERROR)
+            self.info('数量错误', wx.ICON_ERROR)
             return
         counter = 0
         try:
@@ -345,7 +346,7 @@ class MainDialog(MyDialog):
         event.Skip()
 
     def OnAbout(self, event):
-        dlg = wx.MessageDialog(self, ABOUT_INFO, u'关于', wx.OK)
+        dlg = wx.MessageDialog(self, ABOUT_INFO, '关于', wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
  
@@ -403,20 +404,20 @@ class MainDialog(MyDialog):
             styleBefore = ctrl.GetStyleAt(caretPos - 1)
 
         # check before
-        if charBefore and chr(charBefore) in "[]{}()" and styleBefore == wx.stc.STC_P_OPERATOR:
-            braceAtCaret = caretPos - 1
+        if charBefore and (32 < charBefore < 128):
+            if chr(charBefore) in "[]{}()" and styleBefore == wx.stc.STC_P_OPERATOR:
+                braceAtCaret = caretPos - 1
 
         # check after
         if braceAtCaret < 0:
             charAfter = ctrl.GetCharAt(caretPos)
             styleAfter = ctrl.GetStyleAt(caretPos)
-
-            if charAfter and chr(charAfter) in "[]{}()" and styleAfter == wx.stc.STC_P_OPERATOR:
-                braceAtCaret = caretPos
+            if charAfter and (32 < charAfter < 128):
+                if chr(charAfter) in "[]{}()" and styleAfter == wx.stc.STC_P_OPERATOR:
+                    braceAtCaret = caretPos
 
         if braceAtCaret >= 0:
             braceOpposite = ctrl.BraceMatch(braceAtCaret)
-
         if braceAtCaret != -1  and braceOpposite == -1:
             ctrl.BraceBadLight(braceAtCaret)
         else:

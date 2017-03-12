@@ -12,7 +12,7 @@ Python练习题生成器
 * 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
 * 用ASSERT函数筛除不符合规则的出题。
 * random库的所有函数已导入，可直接使用。
-* 支持unicode字符串，注意用前缀u标注。
+* 支持unicode字符串。
 * 当返回结果项为字符串“EOL”时，换行输出。
 
 URL: <https://github.com/pengshulin/exercise_generator>
