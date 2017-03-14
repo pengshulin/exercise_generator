@@ -11,17 +11,22 @@ import random
 import keyword
 from random import *
 from ExerciseGeneratorDlg import *
+    
+import pypinyin
+from pypinyin import pinyin, lazy_pinyin
 
 ABOUT_INFO = '''\
-Python自动出题程序 V1.1
+Python自动出题程序 V1.2
 将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：
 1. 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
 2. 用ASSERT函数筛除不符合规则的出题。
-3. random库的所有函数已导入，可直接使用。
-5. 支持unicode字符串。
-5. 当返回结果项为字符串“EOL”时，换行输出。
+3. 用STOP函数结束出题循环。
+4. random库的所有函数已导入，可直接使用。
+6. 支持pypinyin库，可直接使用pinyin，lazy_pinyin函数。
+6. 支持unicode字符串。
+7. 当返回结果项为字符串“EOL”时，换行输出。
 
 URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
@@ -221,6 +226,60 @@ def generator():
     return [ a, oper, b, '=', c ]
 '''],
 
+['带拼音汉字', '''\
+source=[
+'天', '地', '玄', '黄', '宇', '宙', '洪', '荒',
+'日月盈昃','成宿列张',
+]
+
+compact_mode = False
+# 紧缩模式
+if compact_mode:
+    source=list(''.join(source))
+
+copies=1
+# 创建副本
+if copies > 1:
+    source=[i*copies for i in source]
+
+two_column=True
+# 预处理: 截断或填充
+if two_column:
+    columns, rows = 10, 8
+    source = source[:2*rows]
+    while len(source) < 2*rows:
+        source.append('')
+else:
+    columns, rows = 13, 11
+    source = source[:rows]
+    while len(source) < rows:
+        source.append('')
+
+def generator():
+    global source, copies, two_column, columns, rows
+    if not source:
+        STOP()
+    if two_column:
+        lb = source.pop(len(source)/2)
+        la = source.pop(0)
+        la = la[:columns]
+        lb = lb[:columns]
+        laspace=[' ' for i in range(columns-len(la))]
+        lbspace=[' ' for i in range(columns-len(lb))]
+        pa = [i[0] for i in pinyin(la)]
+        pb = [i[0] for i in pinyin(lb)]
+        ret = pa + laspace + pb + lbspace + ['EOL'] 
+        ret += list(la) + laspace + list(lb) + lbspace
+    else:
+        l = source.pop(0)
+        l = l[:columns]
+        lspace=[' ' for i in range(columns-len(l))]
+        p = [i[0] for i in pinyin(l)]
+        ret = p + lspace + ['EOL'] + list(l) + lspace
+    return ret
+'''],
+
+
 
 ]
 
@@ -233,9 +292,17 @@ for k,v in CONFIGS_LIST:
 class AssertError(Exception):
     pass
 
+class StopError(Exception):
+    pass
+
+
 def ASSERT(condition):
     if not condition:
         raise AssertError()
+
+def STOP():
+    raise StopError()
+
 
 
 class MainDialog(MyDialog):
@@ -307,9 +374,9 @@ class MainDialog(MyDialog):
         counter = 0
         try:
             code = compile(rules, '', 'exec')
-            exec code
+            exec( code )
             generator
-        except Exception, e:
+        except Exception as e:
             self.info(str(e), wx.ICON_ERROR)
             return
         self.clrAllResult()
@@ -321,11 +388,13 @@ class MainDialog(MyDialog):
                 self.addResult( result )
             except AssertError:
                 pass
-            except Exception, e:
+            except StopError:
+                break
+            except Exception as e:
                 self.info(str(e))
                 return
         t1 = time.time()
-        print 'time elapsed: %.1f seconds'% (t1-t0)
+        print( 'time elapsed: %.1f seconds'% (t1-t0) )
         self.button_copy_result.Enable(True)
         event.Skip()
 
@@ -337,8 +406,8 @@ class MainDialog(MyDialog):
             for l in range(lines):
                 items = [self.grid_result.GetCellValue( l, c ) \
                          for c in range(26)]
-                cp = '\t'.join(items).rstrip()
-                #print cp
+                cp = '\t'.join(items).rstrip('\t')
+                print cp
                 ret.append( cp )
             copy = '\r\n'.join(ret)
             import pyperclip

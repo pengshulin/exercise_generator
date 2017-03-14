@@ -4,13 +4,12 @@ import py2exe
 
 setup(
     name=u'Exercise Generator',
-    version='1.1',
+    version='1.2',
     description='automatically generate exercises',
     author='Peng Shulin',
     windows = [
         {
             "script": "ExerciseGeneratorApp.py",
-            #"icon_resources": [(1, "img\\wang.ico")],
         }
     ],
     options = {
