@@ -226,7 +226,7 @@ def generator():
     return [ a, oper, b, '=', c ]
 '''],
 
-['带拼音汉字', '''\
+['带拼音汉字抄写', '''\
 source=[
 '天', '地', '玄', '黄', '宇', '宙', '洪', '荒',
 '日月盈昃','成宿列张',
@@ -278,6 +278,67 @@ def generator():
         ret = p + lspace + ['EOL'] + list(l) + lspace
     return ret
 '''],
+
+['看拼音默写词语', '''\
+# 从UTF8编码的TXT文件加载，词语间用空格或换行分隔
+# 忽略#开头的注释部分，忽略~开头的词语（用于屏蔽掉默熟的词语）
+file_name = 'e:\文档\自动出题\词语默写.txt'  # 更改指定输入文件
+
+def loadWords(fname):
+    ret=[]
+    for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
+        l = l.split('#')[0].strip()
+        if not l or l == '\\ufeff':
+            continue
+        for w in l.split(' '):
+            if not w or w.startswith('~'):
+                continue
+            if w in ret:  # 去除重复的词语，在打乱顺序模式下有用
+                continue
+            ret.append(w)
+    return ret
+
+source = loadWords(file_name)
+#shuffle(source)  # 打乱顺序
+
+columns, rows = 13, 11  # 控制每页行列
+page_limit = 10  # 控制输出页数
+
+row_cur, page_cur = 1, 1
+def generator():
+    global source, columns, rows, row_cur, page_cur, page_limit
+    if not source:
+        STOP()
+    if page_cur > page_limit:
+        STOP()
+    pinyin_lst, hanzi_lst = [], []
+    while True:
+        if not source:
+            break
+        word = source.pop(0)
+        if len(pinyin_lst) + len(word) <= columns:
+            pinyin_lst += [i[0] for i in pinyin(word)]
+            hanzi_lst += list(word)
+            if len(pinyin_lst) + 1 < columns:
+                pinyin_lst.append(' ')
+                hanzi_lst.append(' ')
+        else:
+            source.insert(0, word)
+            break
+    while len(pinyin_lst) < columns:
+        pinyin_lst.append(' ')
+        hanzi_lst.append(' ')
+    row_cur += 1
+    if row_cur > rows:
+        row_cur = 1
+        page_cur += 1
+    # 选择输出内容
+    #return pinyin_lst + ['EOL'] + hanzi_lst  # 拼音+汉字
+    #return ['EOL'] + hanzi_lst  # 仅汉字
+    return pinyin_lst + ['EOL']  # 仅拼音
+'''],
+
+
 
 
 
