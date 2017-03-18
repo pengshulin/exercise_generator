@@ -27,6 +27,7 @@ Python自动出题程序 V1.2
 6. 支持pypinyin库，可直接使用pinyin，lazy_pinyin函数。
 6. 支持unicode字符串。
 7. 当返回结果项为字符串“EOL”时，换行输出。
+8. 用load_words函数从UTF8编码的TXT文件加载词语，词语间用空格或换行分隔，忽略#开头的注释部分，忽略~开头的词语。
 
 URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
@@ -227,89 +228,42 @@ def generator():
 '''],
 
 ['带拼音汉字抄写', '''\
-source=[
-'天', '地', '玄', '黄', '宇', '宙', '洪', '荒',
-'日月盈昃','成宿列张',
-]
-
-compact_mode = False
-# 紧缩模式
-if compact_mode:
-    source=list(''.join(source))
+source = load_words('e:\文档\自动出题\词语默写.txt')
+#source=list(''.join(source)) # 紧缩模式
 
 copies=1
-# 创建副本
 if copies > 1:
-    source=[i*copies for i in source]
+    source=[i*copies for i in source]  # 创建副本
 
-two_column=True
-# 预处理: 截断或填充
-if two_column:
-    columns, rows = 10, 8
-    source = source[:2*rows]
-    while len(source) < 2*rows:
-        source.append('')
-else:
-    columns, rows = 13, 11
-    source = source[:rows]
-    while len(source) < rows:
-        source.append('')
-
+columns, rows = 13, 11  # 控制每页行列
+page_limit = 10  # 控制输出页数
+row_cur, page_cur = 1, 1
 def generator():
-    global source, copies, two_column, columns, rows
-    if not source:
+    global source, columns, rows, row_cur, page_cur, page_limit
+    if not source or page_cur > page_limit:
         STOP()
-    if two_column:
-        lb = source.pop(len(source)/2)
-        la = source.pop(0)
-        la = la[:columns]
-        lb = lb[:columns]
-        laspace=[' ' for i in range(columns-len(la))]
-        lbspace=[' ' for i in range(columns-len(lb))]
-        pa = [i[0] for i in pinyin(la)]
-        pb = [i[0] for i in pinyin(lb)]
-        ret = pa + laspace + pb + lbspace + ['EOL'] 
-        ret += list(la) + laspace + list(lb) + lbspace
-    else:
-        l = source.pop(0)
-        l = l[:columns]
-        lspace=[' ' for i in range(columns-len(l))]
-        p = [i[0] for i in pinyin(l)]
-        ret = p + lspace + ['EOL'] + list(l) + lspace
+    word = source.pop(0)[:columns]
+    pinyin_lst = [i[0] for i in pinyin(word)]
+    hanzi_lst = list(word)
+    space_lst=[' ' for i in range(columns-len(word))]
+    ret = pinyin_lst + space_lst + ['EOL'] + hanzi_lst + space_lst
+    row_cur += 1
+    if row_cur > rows:
+        row_cur = 1
+        page_cur += 1
     return ret
 '''],
 
 ['看拼音默写词语', '''\
-# 从UTF8编码的TXT文件加载，词语间用空格或换行分隔
-# 忽略#开头的注释部分，忽略~开头的词语（用于屏蔽掉默熟的词语）
-file_name = 'e:\文档\自动出题\词语默写.txt'  # 更改指定输入文件
-
-def loadWords(fname):
-    ret=[]
-    for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
-        l = l.split('#')[0].strip()
-        if not l or l == '\\ufeff':
-            continue
-        for w in l.split(' '):
-            if not w or w.startswith('~'):
-                continue
-            if w in ret:  # 去除重复的词语，在打乱顺序模式下有用
-                continue
-            ret.append(w)
-    return ret
-
-source = loadWords(file_name)
+source = load_words('e:\文档\自动出题\词语默写.txt')
 #shuffle(source)  # 打乱顺序
 
 columns, rows = 13, 11  # 控制每页行列
 page_limit = 10  # 控制输出页数
-
 row_cur, page_cur = 1, 1
 def generator():
     global source, columns, rows, row_cur, page_cur, page_limit
-    if not source:
-        STOP()
-    if page_cur > page_limit:
+    if not source or page_cur > page_limit:
         STOP()
     pinyin_lst, hanzi_lst = [], []
     while True:
@@ -339,6 +293,19 @@ def generator():
 '''],
 
 
+['舒尔特方格', '''\
+size=5
+
+def generator():
+    global size
+    source = range(1,size**2+1)
+    shuffle(source)
+    ret = []
+    for i in range(size):
+        ret += [ '%d'% source.pop() for j in range(size) ]
+        ret.append('EOL')
+    return ret
+''']
 
 
 
@@ -363,6 +330,21 @@ def ASSERT(condition):
 
 def STOP():
     raise StopError()
+
+
+def load_words(fname):
+    ret=[]
+    for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
+        l = l.split('#')[0].strip()
+        if not l or l == '\ufeff':
+            continue
+        for w in l.split(' '):
+            if not w or w.startswith('~'):
+                continue
+            if w in ret:
+                continue
+            ret.append(w)
+    return ret
 
 
 
