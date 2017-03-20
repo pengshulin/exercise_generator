@@ -311,13 +311,12 @@ def generator():
 
 ['人民币计算', '''\
 def getName(m): 
-    if m >= 1.0:
-        if m-floor(m):
-            return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
-        else:
-            return '%d元'% (floor(m)) 
-    else:
+    if m < 1.0:
         return '%d角'% (10*(m-floor(m))) 
+    elif m-floor(m):
+        return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
+    else:
+        return '%d元'% (floor(m)) 
 
 def generator():
     global getName
