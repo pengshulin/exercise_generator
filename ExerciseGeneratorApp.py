@@ -9,6 +9,7 @@ import math
 import time
 import random
 import keyword
+from math import *
 from random import *
 from ExerciseGeneratorDlg import *
     
@@ -305,8 +306,35 @@ def generator():
         ret += [ '%d'% source.pop() for j in range(size) ]
         ret.append('EOL')
     return ret
-''']
+'''],
 
+
+['人民币计算', '''\
+def getName(m): 
+    if m >= 1.0:
+        if m-floor(m):
+            return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
+        else:
+            return '%d元'% (floor(m)) 
+    else:
+        return '%d角'% (10*(m-floor(m))) 
+
+def generator():
+    global getName
+    MIN, MAX = 0.1, 10.0
+    a = round(random()*MAX, 1)
+    b = round(random()*MAX, 1)
+    oper = choice('+-')
+    if oper == '+':
+        c = a + b
+    else:
+        c = a - b
+    ASSERT( MIN <= a <= MAX )
+    ASSERT( MIN <= b <= MAX )
+    ASSERT( MIN <= c <= MAX )
+    #return [ a, oper, b, '=', c ]
+    return [ getName(a), oper, getName(b), '=', '____元____角' ]  
+'''],
 
 
 ]
