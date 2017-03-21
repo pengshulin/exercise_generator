@@ -24,7 +24,7 @@ Python自动出题程序 V1.2
 1. 定义必须包含generator函数，其返回值必须为字符串列表，作为单次出题结果。
 2. 用ASSERT函数筛除不符合规则的出题。
 3. 用STOP函数结束出题循环。
-4. random库的所有函数已导入，可直接使用。
+4. math/random库的所有函数已导入，可直接使用。
 6. 支持pypinyin库，可直接使用pinyin，lazy_pinyin函数。
 6. 支持unicode字符串。
 7. 当返回结果项为字符串“EOL”时，换行输出。
@@ -47,7 +47,7 @@ def generator():
     MIN, MAX = 0, 100
     a = randint(MIN, MAX)
     b = randint(MIN, MAX)
-    oper = choice( ['-', '+'] ) 
+    oper = choice( '+-' ) 
     if oper == '+':
         c = a + b
     else:
@@ -92,8 +92,8 @@ def generator():
     a = randint(MIN, MAX)
     b = randint(MIN, MAX)
     c = randint(MIN, MAX)
-    oper1 = choice( ['-', '+'] ) 
-    oper2 = choice( ['-', '+'] ) 
+    oper1 = choice( '+-' ) 
+    oper2 = choice( '+-' ) 
     if oper1 == '+':
         ab = a + b
     else:
@@ -217,7 +217,7 @@ def generator():
     a = randint(MIN, MAX)
     b = randint(MIN, MAX)
     ASSERT( 1 <= b <= 9 )
-    #oper = choice( ['-', '+'] ) 
+    #oper = choice( '+-' ) 
     oper = '+'
     if oper == '+':
         c = a + b
@@ -312,7 +312,7 @@ def generator():
 ['人民币计算', '''\
 def getName(m): 
     if m < 1.0:
-        return '%d角'% (10*(m-floor(m))) 
+        return '%d角'% (10*m) 
     elif m-floor(m):
         return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
     else:
@@ -323,7 +323,7 @@ def generator():
     MIN, MAX = 0.1, 10.0
     a = round(random()*MAX, 1)
     b = round(random()*MAX, 1)
-    oper = choice('+-')
+    oper = choice( '+-' )
     if oper == '+':
         c = a + b
     else:
