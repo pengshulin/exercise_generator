@@ -1,4 +1,4 @@
-﻿; Bearing monitor
+﻿; 
 
 [Setup]
 AppName=自动出题机 V1.2

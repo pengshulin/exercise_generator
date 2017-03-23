@@ -12,7 +12,10 @@ import keyword
 from math import *
 from random import *
 from ExerciseGeneratorDlg import *
-    
+#from sudoku_maker import SudokuMaker
+import sudokulib
+import sudokulib.sudoku
+from sudokulib.sudoku import Sudoku
 import pypinyin
 from pypinyin import pinyin, lazy_pinyin
 
@@ -334,6 +337,22 @@ def generator():
     #return [ a, oper, b, '=', c ]
     return [ getName(a), oper, getName(b), '=', '____元____角' ]  
 '''],
+
+['数独', '''\
+def generator():
+    GRID = 3
+    ret = []
+    board = Sudoku( GRID )
+    board.solve()
+    for i in range(GRID**2):
+        for j in range(GRID**2):
+            v = board.masked_grid[i*GRID**2+j]
+            #v = board.solution[i*GRID**2+j]
+            ret.append( ' ' if v == '_' else v  )
+        ret.append('EOL') 
+    return ret
+'''],
+
 
 
 ]
