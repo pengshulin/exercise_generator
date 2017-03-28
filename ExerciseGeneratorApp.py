@@ -31,7 +31,7 @@ Python自动出题程序 V1.2
 6. 支持pypinyin库，可直接使用pinyin，lazy_pinyin函数。
 6. 支持unicode字符串。
 7. 当返回结果项为字符串“EOL”时，换行输出。
-8. 用load_words函数从UTF8编码的TXT文件加载词语，词语间用空格或换行分隔，忽略#开头的注释部分，忽略~开头的词语。
+8. 用load_cn_words函数从UTF8编码的TXT文件加载词语，词语间用空格或换行分隔，忽略#开头的注释部分，忽略~开头的词语。
 
 URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
@@ -53,8 +53,14 @@ def generator():
     oper = choice( '+-' ) 
     if oper == '+':
         c = a + b
+        jinwei = bool( a%10 + b%10 >= 10 )
+        #ASSERT( jinwei )  # 进位
+        #ASSERT( not jinwei )  # 不进位
     else:
         c = a - b
+        tuiwei = bool( a%10 < b%10 )
+        #ASSERT( tuiwei )  # 退位
+        #ASSERT( not tuiwei )  # 不退位
     ASSERT( 0 <= c <= MAX )
     #return [ a, oper, b, '=', '□' ]
     #return [ '%s%s%s='% (a, oper, b) ] 
@@ -232,7 +238,7 @@ def generator():
 '''],
 
 ['带拼音汉字抄写', '''\
-source = load_words('e:\文档\自动出题\词语默写.txt')
+source = load_cn_words('e:\文档\自动出题\词语默写.txt')
 #source=list(''.join(source)) # 紧缩模式
 
 copies=1
@@ -259,7 +265,7 @@ def generator():
 '''],
 
 ['看拼音默写词语', '''\
-source = load_words('e:\文档\自动出题\词语默写.txt')
+source = load_cn_words('e:\文档\自动出题\词语默写.txt')
 #shuffle(source)  # 打乱顺序
 
 columns, rows = 13, 11  # 控制每页行列
@@ -306,23 +312,14 @@ def generator():
     shuffle(source)
     ret = []
     for i in range(size):
-        ret += [ '%d'% source.pop() for j in range(size) ]
+        ret += [ '%s'% source.pop() for j in range(size) ]
         ret.append('EOL')
     return ret
 '''],
 
 
 ['人民币计算', '''\
-def getName(m): 
-    if m < 1.0:
-        return '%d角'% (10*m) 
-    elif m-floor(m):
-        return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
-    else:
-        return '%d元'% (floor(m)) 
-
 def generator():
-    global getName
     MIN, MAX = 0.1, 10.0
     a = round(random()*MAX, 1)
     b = round(random()*MAX, 1)
@@ -335,8 +332,10 @@ def generator():
     ASSERT( MIN <= b <= MAX )
     ASSERT( MIN <= c <= MAX )
     #return [ a, oper, b, '=', c ]
-    return [ getName(a), oper, getName(b), '=', '____元____角' ]  
+    return [ getRMBName(a), oper, getRMBName(b), '=', '____元____角' ]  
 '''],
+
+
 
 ['数独', '''\
 def generator():
@@ -350,6 +349,26 @@ def generator():
             #v = board.solution[i*GRID**2+j]
             ret.append( ' ' if v == '_' else v  )
         ret.append('EOL') 
+    return ret
+'''],
+
+['加减乘法表', '''\
+oper='*'
+line=1
+def generator():
+    global line, oper
+    if line > 10:
+        STOP()
+    ret = []
+    for i in range(line, 10+1):
+        if oper == '*':
+            s = '%d%s%d=%d'% (line, oper, i, line * i )
+        elif oper == '+':
+            s = '%d%s%d=%d'% (line, oper, i, line + i )
+        elif oper == '-':
+            s = '%d%s%d=%d'% (i, oper, line, i - line )
+        ret.append( s )
+    line += 1
     return ret
 '''],
 
@@ -374,12 +393,14 @@ def ASSERT(condition):
     if not condition:
         raise AssertError()
 
-def STOP():
-    raise StopError()
+def STOP(message=''):
+    raise StopError(message)
 
 
-def load_words(fname):
+def load_cn_words(fname):
     ret=[]
+    if not os.path.isfile(fname):
+        STOP('文件 %s 不存在'% fname)
     for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
         l = l.split('#')[0].strip()
         if not l or l == '\ufeff':
@@ -391,6 +412,14 @@ def load_words(fname):
                 continue
             ret.append(w)
     return ret
+
+def getRMBName(m): 
+    if m < 1.0:
+        return '%d角'% (10*m) 
+    elif m-floor(m):
+        return '%d元%d角'% (floor(m), 10*m-10*floor(m)) 
+    else:
+        return '%d元'% (floor(m)) 
 
 
 
@@ -466,7 +495,7 @@ class MainDialog(MyDialog):
             exec( code )
             generator
         except Exception as e:
-            self.info(str(e), wx.ICON_ERROR)
+            self.info(unicode(e), wx.ICON_ERROR)
             return
         self.clrAllResult()
         t0 = time.time()
@@ -477,10 +506,11 @@ class MainDialog(MyDialog):
                 self.addResult( result )
             except AssertError:
                 pass
-            except StopError:
+            except StopError as e:
+                self.info(unicode(e), wx.ICON_ERROR)
                 break
             except Exception as e:
-                self.info(str(e))
+                self.info(unicode(e))
                 return
         t1 = time.time()
         print( 'time elapsed: %.1f seconds'% (t1-t0) )
