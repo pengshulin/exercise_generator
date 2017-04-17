@@ -45,6 +45,18 @@ def generator():
     return [ a ]
 '''],
 
+['生成整行随机数', '''\
+def generator():
+    l, LINE_LIMIT = '', 50
+    while len(l) < LINE_LIMIT:
+        #l = l + str(randint(0, 9))
+        #l = l + str(randint(0, 9)) + ' '
+        l = l + str(randint(10, 99)) + ' '
+        #l = l + str(randint(100, 999)) + ' '
+    return [ l ]
+'''],
+
+
 ['加减法（2个数）', '''\
 def generator():
     MIN, MAX = 0, 100
@@ -127,6 +139,7 @@ def generator():
     ab = a + b
     bc = b + c
     ac = a + c
+    ASSERT( 0 <= ab <= MAX )
     ASSERT( 0 <= bc <= MAX )
     ASSERT( 0 <= ac <= MAX )
     return [ 'EOL','EOL',ab,'',a,'',ac,'EOL','EOL','',b,'',c,'EOL','EOL','','',bc]
@@ -370,6 +383,30 @@ def generator():
         ret.append( s )
     line += 1
     return ret
+'''],
+
+
+['12/24时间制式转换', '''\
+def getTimeName(hour, minute, format_24h):
+    if format_24h:
+        r = '%d时'% hour
+    else:
+        if hour <= 12:
+            r = '上午%d时'% hour
+        else:
+            r = '下午%d时'% (hour-12)
+    if minute == 0:
+        pass
+    elif minute == 30:
+        r += '半'
+    return r
+
+def generator():
+    global getTimeName
+    hour = randint(0,23)
+    minute = choice([0,30])
+    name = '%d:%02d'% (hour, minute)
+    return [ name, getTimeName(hour,minute,False), getTimeName(hour,minute,True) ]
 '''],
 
 
