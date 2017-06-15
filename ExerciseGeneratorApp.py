@@ -409,6 +409,36 @@ def generator():
     return [ name, getTimeName(hour,minute,False), getTimeName(hour,minute,True) ]
 '''],
 
+['四则混合运算（3个数）', '''\
+def generator():
+    MIN, MAX = 0, 10000
+    a = randint(MIN, 99)
+    b = randint(MIN, 99)
+    c = randint(MIN, MAX)
+    oper1 = choice( '*/' ) 
+    oper2 = choice( '+-' ) 
+    inv = bool(random() > 0.5)
+    ASSERT( a < 100 )
+    ASSERT( b < 100 )
+    if oper1 == '*':
+        ab = a * b
+    else:
+        ASSERT( b > 0 )
+        ab = a / b
+        ASSERT( ab * b == a )
+    ASSERT( 0 <= ab <= MAX )
+    if oper2 == '+':
+        d = ab + c 
+    elif inv:
+        d = c - ab 
+    else:
+        d = ab - c
+    ASSERT( 0 <= d <= MAX )
+    if inv:
+        return [ c, oper2, a, oper1, b, '=', d ]
+    else:
+        return [ a, oper1, b, oper2, c, '=', d ]
+'''],
 
 
 ]
