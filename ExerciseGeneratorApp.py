@@ -89,7 +89,7 @@ def generator():
     b = randint(MIN, MAX)
     c = a * b
     ASSERT( 0 <= c <= 100 )
-    return [ a, '*', b, '=', c ]
+    return [ a, '×', b, '=', c ]
 '''],
 
 ['比较大小（2个数）', '''\
@@ -251,7 +251,7 @@ def generator():
 '''],
 
 ['带拼音汉字抄写', '''\
-source = load_cn_words('e:\文档\自动出题\词语默写.txt')
+source = load_cn_words('e:\\文档\\自动出题\\词语默写.txt')
 #source=list(''.join(source)) # 紧缩模式
 
 copies=1
@@ -278,7 +278,7 @@ def generator():
 '''],
 
 ['看拼音默写词语', '''\
-source = load_cn_words('e:\文档\自动出题\词语默写.txt')
+source = load_cn_words('e:\\文档\\自动出题\\词语默写.txt')
 #shuffle(source)  # 打乱顺序
 
 columns, rows = 13, 11  # 控制每页行列
@@ -440,6 +440,27 @@ def generator():
         return [ a, oper1, b, oper2, c, '=', d ]
 '''],
 
+['除法', '''\
+def generator():
+    #NO_REMAINING = True  # 不允许有余数
+    NO_REMAINING = False  # 允许有余数
+    MIN, MAX = 1, 100
+    MIN2, MAX2 = 2, 10
+    a = randint(MIN, MAX)
+    b = randint(MIN2, MAX2)
+    c = a/b
+    d = a - b * c
+    ASSERT( c >= 1 )
+    #ASSERT( c <= 10 )  # 简单除法
+    if NO_REMAINING:
+        ASSERT( d == 0 )  # 没有余数
+        return [ a, '÷', b, '=', c ]
+    else:
+        #ASSERT( d > 0 )  # 余数不能为零
+        ASSERT( d >= 0 )  # 余数允许为零
+        return [ a, '÷', b, '=', c, '...', d ]
+'''],
+
 
 ]
 
@@ -469,8 +490,10 @@ def load_cn_words(fname):
     if not os.path.isfile(fname):
         STOP('文件 %s 不存在'% fname)
     for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
+        if l.startswith('\ufeff'):
+            l = l.lstrip('\ufeff')
         l = l.split('#')[0].strip()
-        if not l or l == '\ufeff':
+        if not l:
             continue
         for w in l.split(' '):
             if not w or w.startswith('~'):
