@@ -251,7 +251,7 @@ def generator():
 '''],
 
 ['带拼音汉字抄写', '''\
-source = load_cn_words('e:\\文档\\自动出题\\词语默写.txt')
+source = load_cn_words('e:\\\\文档\\\\自动出题\\\\词语默写.txt')
 #source=list(''.join(source)) # 紧缩模式
 
 copies=1
@@ -278,7 +278,7 @@ def generator():
 '''],
 
 ['看拼音默写词语', '''\
-source = load_cn_words('e:\\文档\\自动出题\\词语默写.txt')
+source = load_cn_words('e:\\\\文档\\\\自动出题\\\\词语默写.txt')
 #shuffle(source)  # 打乱顺序
 
 columns, rows = 13, 11  # 控制每页行列
