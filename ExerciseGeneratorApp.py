@@ -20,7 +20,7 @@ import pypinyin
 from pypinyin import pinyin, lazy_pinyin
 
 ABOUT_INFO = '''\
-Python自动出题程序 V1.2
+Python自动出题程序 V1.3
 将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：
@@ -32,6 +32,8 @@ Python自动出题程序 V1.2
 6. 支持unicode字符串。
 7. 当返回结果项为字符串“EOL”时，换行输出。
 8. 用load_cn_words函数从UTF8编码的TXT文件加载词语，词语间用空格或换行分隔，忽略#开头的注释部分，忽略~开头的词语。
+9. 用load_en_words函数加载单词表，每行单词先英文后中文，用至少三个空格分隔。
+
 
 URL: https://github.com/pengshulin/exercise_generator
 Peng Shullin <trees_peng@163.com> 2017
@@ -365,6 +367,7 @@ def generator():
     return ret
 '''],
 
+
 ['加减乘法表', '''\
 oper='*'
 line=1
@@ -409,6 +412,7 @@ def generator():
     return [ name, getTimeName(hour,minute,False), getTimeName(hour,minute,True) ]
 '''],
 
+
 ['四则混合运算（3个数）', '''\
 def generator():
     MIN, MAX = 0, 10000
@@ -440,6 +444,7 @@ def generator():
         return [ a, oper1, b, oper2, c, '=', d ]
 '''],
 
+
 ['除法', '''\
 def generator():
     #NO_REMAINING = True  # 不允许有余数
@@ -461,6 +466,50 @@ def generator():
         return [ a, '÷', b, '=', c, '...', d ]
 '''],
 
+['英语单词默写', '''\
+# 注：不同文件加载的单词列表可用加号拼接，如：dictionary += load_en_words(第二个单词表文件)
+dictionary = load_en_words('e:\\\\文档\\\\自动出题\\\\英语单词表\\\\上海版牛津小学英语单词表\\\\2A.txt')
+
+RANDOM_MODE = True  # 随机选词
+RANDOM_MODE = False  # 顺序选词
+
+COLUMNS = 3  # 列数
+
+ASTERISK_ONLY = False  # 加载所有单词
+#ASTERISK_ONLY = True  # 仅加载星号"*"标注的单词
+
+
+# 过滤星号标注的单词
+dic = []
+for en, cn in dictionary:
+    if en.startswith('*'):
+        en = en.lstrip('*')
+        dic.append( [en, cn] )
+    else:
+        if not ASTERISK_ONLY:
+            dic.append( [en, cn] )
+dictionary = dic
+
+def generator():
+    global dictionary, RANDOM_MODE, COLUMNS
+    line_cn, line_en = [], []
+    if len(dictionary) == 0:
+        STOP()
+    for i in range(COLUMNS):
+        if len(dictionary) == 0:
+            break
+        if RANDOM_MODE:
+            item = choice( dictionary )
+            dictionary.remove(item)
+        else:
+            item = dictionary.pop(0)
+        en, cn = item
+        line_cn.append( cn )
+        line_en.append( blank_word(en, skip_leading=1) )  # 提示首字母
+        #line_en.append( blank_word(en, skip_leading=0) )  # 不提示首字母
+    return line_cn + ['EOL'] + line_en + ['EOL']
+
+'''],
 
 ]
 
@@ -502,6 +551,36 @@ def load_cn_words(fname):
                 continue
             ret.append(w)
     return ret
+
+def load_en_words(fname):
+    ret=[]
+    if not os.path.isfile(fname):
+        STOP('文件 %s 不存在'% fname)
+    for l in open(fname,'r').read().decode(encoding='utf8').splitlines():
+        if l.startswith('\ufeff'):
+            l = l.lstrip('\ufeff')
+        l = l.split('#')[0].strip()
+        if not l:
+            continue
+        splits = l.split('   ')
+        if len(splits) < 2:
+            continue
+        cn = splits.pop().strip()
+        en = ''.join(splits)
+        cn_splits = cn.split('.')
+        if len(cn_splits) > 1:
+            if cn_splits[0] in ['adv','adj','conj','aux','interj','v','n','num','prep','pron']:
+                cn = ''.join(cn_splits[1:]) 
+        ret.append( [en, cn] )
+    return ret
+
+
+def blank_word(word, space_seperator=True, skip_leading=1):
+    word_list = list(word)
+    for i in range(skip_leading, len(word_list)):
+        if word_list[i].isalpha():
+            word_list[i] = ' _' if space_seperator else '_'
+    return ''.join(word_list)
 
 def getRMBName(m): 
     if m < 1.0:
