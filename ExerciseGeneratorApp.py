@@ -511,6 +511,134 @@ def generator():
 
 '''],
 
+
+['英语完成填空', '''\
+INPUT = load_file('完形填空.txt')
+
+BLANK_NUM = 10  # 填空数量
+WORD_MIN_LEN = 3  # 填空单词最小字符数
+BLANK_LEN_MIN = 10  # 填空长度
+SEPERATE_WORDS_MIN_NUM = 2  # 两个填空之间最小分隔单词数量
+WORD_EXCEPTIONS = '\'\'
+am at is in it he no of
+are was she has had for not but the for and 
+were been them have that this
+'\'\'.split()
+WORD_EXCEPTIONS_FILE = '完形填空排除的单词.txt'  # 附加的排除的单词列表文件
+if os.path.isfile( WORD_EXCEPTIONS_FILE ):
+    for l in load_file(WORD_EXCEPTIONS_FILE):
+        WORD_EXCEPTIONS += get_line_words(l)
+
+# 预处理
+WORD_PAT = re.compile('[a-zA-Z0-9][a-z0-9-]*')
+class Word():
+    def __init__( self, s, is_word=True, valid=True, blank=False ):
+        self.s = s
+        self.is_word = is_word 
+        self.valid = valid
+        self.blank = blank
+        self.sol = False
+        self.eol = False
+    def __str__( self ):
+        global BLANK_LEN_MIN 
+        if not self.valid:
+            return self.s
+        else:
+            if self.blank:
+                return '_'*max(BLANK_LEN_MIN, len(self.s)+2)
+            else:
+                return self.s  # self.s.join('()')
+
+LIST = []
+for l in INPUT:
+    words = WORD_PAT.findall( l )
+    words_split = WORD_PAT.split( l )
+    LIST.append(Word(words_split[0], is_word=False, valid=False))
+    words_len = len(words)
+    for i in range(words_len):
+        w = words[i]
+        if w in WORD_EXCEPTIONS:
+            valid = False
+        elif w.lower() in WORD_EXCEPTIONS:
+            valid = False
+        elif len(w) < WORD_MIN_LEN:
+            valid = False
+        else:
+            valid = True
+        _w = Word(w, valid=valid )
+        if i == 0:
+            _w.sol = True
+        elif i == words_len-1:
+            _w.eol = True
+        LIST.append( _w )
+        LIST.append( Word(words_split[i+1], is_word=False, valid=False) )
+    LIST.append( Word('\\n', valid=False) )
+#print ''.join( [str(i) for i in LIST] )
+
+# 选择填空
+SELECTED_WORDS = []
+blank_counter = 0
+list_len = len(LIST)
+while blank_counter < BLANK_NUM:
+    idx = randint(0, list_len-1)
+    if not LIST[idx].valid:
+        continue
+    # 检查左侧单词
+    if not LIST[idx].sol:
+        valid, sep_chk_cnt, i = True, 0, idx
+        while sep_chk_cnt < SEPERATE_WORDS_MIN_NUM:
+            if i == 0:
+                break
+            i -= 1
+            if LIST[i].sol:
+                break
+            if not LIST[i].is_word:
+                continue
+            sep_chk_cnt += 1
+            if LIST[i].blank:
+                valid = False
+                break
+            if LIST[i].sol:
+                break
+        if not valid:
+            continue
+    # 检查右侧单词
+    if not LIST[idx].eol:
+        valid, sep_chk_cnt, i = True, 0, idx
+        while sep_chk_cnt < SEPERATE_WORDS_MIN_NUM:
+            if i == list_len-1:
+                break
+            i += 1
+            if LIST[i].eol:
+                break
+            if not LIST[i].is_word:
+                continue
+            sep_chk_cnt += 1
+            if LIST[i].blank:
+                valid = False
+                break
+            if LIST[i].eol:
+                break
+        if not valid:
+            continue
+    # 过滤掉重复单词
+    if str(LIST[idx]).lower() in SELECTED_WORDS:
+        continue
+    print LIST[idx]
+    LIST[idx].blank = True
+    SELECTED_WORDS.append( str(LIST[idx]).lower() )
+    blank_counter += 1 
+
+
+OUTPUT = ''.join([str(i) for i in LIST]).splitlines()
+def generator():
+    global OUTPUT
+    if not OUTPUT:
+        STOP()
+    return [ OUTPUT.pop(0) ]
+
+'''],
+
 ]
 
 CONFIGS_DICT = {}
@@ -574,6 +702,16 @@ def load_en_words(fname):
         ret.append( [en, cn] )
     return ret
 
+def load_file(fname):
+    ret=[]
+    if not os.path.isfile(fname):
+        STOP('文件 %s 不存在'% fname)
+    raw = open(fname,'r').read().decode(encoding='utf8')
+    if raw.startswith('\ufeff'):
+        raw = raw.lstrip('\ufeff')
+    for l in raw.splitlines():
+        ret.append( l.rstrip() )
+    return ret
 
 def blank_word(word, space_seperator=True, skip_leading=1):
     word_list = list(word)
@@ -581,6 +719,14 @@ def blank_word(word, space_seperator=True, skip_leading=1):
         if word_list[i].isalpha():
             word_list[i] = ' _' if space_seperator else '_'
     return ''.join(word_list)
+
+def get_line_words(line):
+    ret = []
+    for i in line.split():
+        i = i.strip()
+        if i:
+            ret.append(i) 
+    return ret
 
 def getRMBName(m): 
     if m < 1.0:
