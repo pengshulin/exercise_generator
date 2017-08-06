@@ -18,6 +18,9 @@ import sudokulib.sudoku
 from sudokulib.sudoku import Sudoku
 import pypinyin
 from pypinyin import pinyin, lazy_pinyin
+from genxword.control import Genxword
+from genxword.calculate import Crossword
+
 
 ABOUT_INFO = '''\
 Python自动出题程序 V1.3
@@ -512,25 +515,21 @@ def generator():
 '''],
 
 
-['英语完成填空', '''\
+['英语完形填空', '''\
 INPUT = load_file('完形填空.txt')
 
 BLANK_NUM = 10  # 填空数量
 WORD_MIN_LEN = 3  # 填空单词最小字符数
 BLANK_LEN_MIN = 10  # 填空长度
 SEPERATE_WORDS_MIN_NUM = 2  # 两个填空之间最小分隔单词数量
-WORD_EXCEPTIONS = '\'\'
-am at is in it he no of
-are was she has had for not but the for and 
-were been them have that this
-'\'\'.split()
+WORD_EXCEPTIONS = []
 WORD_EXCEPTIONS_FILE = '完形填空排除的单词.txt'  # 附加的排除的单词列表文件
 if os.path.isfile( WORD_EXCEPTIONS_FILE ):
     for l in load_file(WORD_EXCEPTIONS_FILE):
         WORD_EXCEPTIONS += get_line_words(l)
 
 # 预处理
-WORD_PAT = re.compile('[a-zA-Z0-9][a-z0-9-]*')
+WORD_PAT = re.compile('[a-zA-Z0-9][a-zA-Z0-9-\\']*')
 class Word():
     def __init__( self, s, is_word=True, valid=True, blank=False ):
         self.s = s
@@ -583,6 +582,8 @@ while blank_counter < BLANK_NUM:
     idx = randint(0, list_len-1)
     if not LIST[idx].valid:
         continue
+    if LIST[idx].s[-1] in '-\\'':
+        continue
     # 检查左侧单词
     if not LIST[idx].sol:
         valid, sep_chk_cnt, i = True, 0, idx
@@ -590,13 +591,12 @@ while blank_counter < BLANK_NUM:
             if i == 0:
                 break
             i -= 1
-            if LIST[i].sol:
-                break
             if not LIST[i].is_word:
                 continue
             sep_chk_cnt += 1
             if LIST[i].blank:
                 valid = False
+                print '  left check fail', LIST[i].s, '<--', LIST[idx]
                 break
             if LIST[i].sol:
                 break
@@ -609,27 +609,26 @@ while blank_counter < BLANK_NUM:
             if i == list_len-1:
                 break
             i += 1
-            if LIST[i].eol:
-                break
             if not LIST[i].is_word:
                 continue
             sep_chk_cnt += 1
             if LIST[i].blank:
                 valid = False
+                print '  right check fail', LIST[idx], '-->', LIST[i].s
                 break
             if LIST[i].eol:
                 break
         if not valid:
             continue
     # 过滤掉重复单词
-    if str(LIST[idx]).lower() in SELECTED_WORDS:
+    if LIST[idx].s.lower() in SELECTED_WORDS:
         continue
     print LIST[idx]
     LIST[idx].blank = True
-    SELECTED_WORDS.append( str(LIST[idx]).lower() )
+    SELECTED_WORDS.append( LIST[idx].s.lower() )
     blank_counter += 1 
 
-
+print SELECTED_WORDS
 OUTPUT = ''.join([str(i) for i in LIST]).splitlines()
 def generator():
     global OUTPUT
@@ -637,6 +636,48 @@ def generator():
         STOP()
     return [ OUTPUT.pop(0) ]
 
+'''],
+
+
+['成语CROSSWORD', '''\
+INPUT = []
+for l in load_file('成语列表.txt'):
+    for i in get_line_words(l):
+        if not i in INPUT:
+            INPUT.append(i)
+
+gen = Genxword(auto=True)
+gen.wlist(INPUT, len(INPUT))
+
+ROW, COL = 20, 20
+calc = Crossword( ROW, COL, '', gen.wordlist )
+calc.compute_crossword()
+
+RESULT = calc.best_grid
+BLANKED = [['' for c in range(COL)] for r in range(ROW)]
+for r in range(ROW):
+    for c in range(COL):
+        v = RESULT[r][c]
+        # 检查相邻位置是否有内容，判断是否为交叉位置
+        cnt_v, cnt_h = 0, 0
+        if r > 0 and RESULT[r-1][c]:
+            cnt_v += 1
+        if r < ROW-1 and RESULT[r+1][c]:
+            cnt_v += 1
+        if c < COL-1 and RESULT[r][c+1]:
+            cnt_h += 1
+        if c > 0 and RESULT[r][c-1]:
+            cnt_h += 1
+        if v and cnt_v*cnt_h==0:
+            v = "□"
+        BLANKED[r][c] = v
+
+OUTPUT = BLANKED + [''] + RESULT
+def generator():
+    global OUTPUT
+    if not OUTPUT:
+        STOP()
+    return OUTPUT.pop(0)
 '''],
 
 ]
