@@ -1,4 +1,4 @@
-e:
+d:
 cd \src\github.exercise_generator\
 
 python setup_ExerciseGeneratorApp.py py2exe

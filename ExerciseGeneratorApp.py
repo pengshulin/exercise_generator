@@ -23,7 +23,7 @@ from genxword.calculate import Crossword
 
 
 ABOUT_INFO = '''\
-Python自动出题程序 V1.3
+Python自动出题程序 V1.4alpha
 将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：

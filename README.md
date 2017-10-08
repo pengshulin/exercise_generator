@@ -11,6 +11,12 @@ Python练习题生成器
 
 * 参考“关于”按钮。
 
+
+截图
+
+![](snapshots/demo.png)
+
+
 URL: <https://github.com/pengshulin/exercise_generator>
 
 Peng Shullin <trees_peng@163.com> 2017
