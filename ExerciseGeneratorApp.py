@@ -645,11 +645,11 @@ for l in load_file('成语列表.txt'):
     for i in get_line_words(l):
         if not i in INPUT:
             INPUT.append(i)
-
+shuffle(INPUT)
 gen = Genxword(auto=True)
 gen.wlist(INPUT, len(INPUT))
 
-ROW, COL = 20, 20
+ROW, COL = 10, 10
 calc = Crossword( ROW, COL, '', gen.wordlist )
 calc.compute_crossword()
 
@@ -678,6 +678,53 @@ def generator():
     if not OUTPUT:
         STOP()
     return OUTPUT.pop(0)
+'''],
+
+
+['小数加减', '''\
+def S(val):
+    # 简化
+    if int(val) == float(val):
+        return int(val)
+    else:
+        return val
+
+def generator():
+    global S
+    MIN, MAX = 0.0, 10.0
+    DIGITS = 1
+    mul = 10**DIGITS
+    a = randint(MIN*mul, MAX*mul) / float(mul)
+    b = randint(MIN*mul, MAX*mul) / float(mul)
+    oper = choice( '+-' ) 
+    if oper == '+':
+        c = a + b
+    else:
+        c = a - b
+    ASSERT( 0 <= c <= MAX )
+    #return [ a, oper, b, '=', '□' ]
+    return [ S(a), oper, S(b), '=', S(c) ]
+'''],
+
+
+['分数加减', '''\
+# a/b +/- c/d = e/f
+def generator():
+    MIN, MAX = 1, 10
+    a = randint(MIN, MAX)
+    b = randint(MIN, MAX)
+    ASSERT( a < b )
+    c = randint(MIN, MAX)
+    d = randint(MIN, MAX)
+    ASSERT( c < d )
+    #ASSERT( b == d )  # 同分母
+    #ASSERT( a == c )  # 同分子
+    oper = choice( '+-' ) 
+    if oper == '+':
+        pass
+    else:
+        ASSERT( float(a)/float(b) >= float(c)/float(d) )
+    return [ a, '', c, 'EOL', '──', oper, '──', '=', 'EOL', b, '', d, 'EOL' ]
 '''],
 
 ]
@@ -735,7 +782,9 @@ def load_en_words(fname):
         if len(splits) < 2:
             continue
         cn = splits.pop().strip()
-        en = ''.join(splits)
+        en = ''.join(splits).strip()
+        if (not en) or (not cn):
+            continue
         cn_splits = cn.split('.')
         if len(cn_splits) > 1:
             if cn_splits[0] in ['adv','adj','conj','aux','interj','v','n','num','prep','pron']:
