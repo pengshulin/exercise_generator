@@ -522,6 +522,8 @@ BLANK_NUM = 10  # 填空数量
 WORD_MIN_LEN = 3  # 填空单词最小字符数
 BLANK_LEN_MIN = 10  # 填空长度
 SEPERATE_WORDS_MIN_NUM = 2  # 两个填空之间最小分隔单词数量
+SHOW_LEADING_LETTER = False  # 不显示单词首字母
+#SHOW_LEADING_LETTER = True  # 显示单词首字母
 WORD_EXCEPTIONS = []
 WORD_EXCEPTIONS_FILE = '完形填空排除的单词.txt'  # 附加的排除的单词列表文件
 if os.path.isfile( WORD_EXCEPTIONS_FILE ):
@@ -539,12 +541,16 @@ class Word():
         self.sol = False
         self.eol = False
     def __str__( self ):
-        global BLANK_LEN_MIN 
+        global BLANK_LEN_MIN, SHOW_LEADING_LETTER
         if not self.valid:
             return self.s
         else:
             if self.blank:
-                return '_'*max(BLANK_LEN_MIN, len(self.s)+2)
+                underline = '_'*max(BLANK_LEN_MIN, len(self.s)+2)
+                if SHOW_LEADING_LETTER:
+                    return self.s[0] + underline[1:]
+                else:
+                    return underline
             else:
                 return self.s  # self.s.join('()')
 
