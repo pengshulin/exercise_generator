@@ -23,7 +23,7 @@ from genxword.calculate import Crossword
 
 
 ABOUT_INFO = '''\
-Python自动出题程序 V1.4alpha
+Python自动出题程序 V1.4
 将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：
@@ -713,24 +713,56 @@ def generator():
 '''],
 
 
-['分数加减', '''\
-# a/b +/- c/d = e/f
+['分数运算', '''\
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def simplify(a,b):
+    global gcd
+    div, _a = a/b, a%b
+    d = gcd(_a,b)
+    x, y = _a / d, b / d
+    print '%d/%d'%(a,b), 'gcd=%d'%d, '->', '%d %d/%d'%(div, x, y)
+    return div, x, y 
+    
+# (A+(B/C)) (+/-/*//) (D+(E/F)) = X+Y/Z
 def generator():
-    MIN, MAX = 1, 10
-    a = randint(MIN, MAX)
-    b = randint(MIN, MAX)
-    ASSERT( a < b )
-    c = randint(MIN, MAX)
-    d = randint(MIN, MAX)
-    ASSERT( c < d )
-    #ASSERT( b == d )  # 同分母
-    #ASSERT( a == c )  # 同分子
-    oper = choice( '+-' ) 
+    global simplify
+    RESULT_DIV_MAX = 50  # 计算结果分母上限
+    MIN, MAX = 1, 20
+    _b = randint(MIN, MAX)
+    _c = randint(2, MAX)
+    _e = randint(MIN, MAX)
+    _f = randint(2, MAX)
+    a, b, c = simplify( _b, _c )
+    ASSERT( b != 0 )
+    d, e, f = simplify( _e, _f ) 
+    ASSERT( e != 0 )
+    
+    #ASSERT( c == f )  # 同分母
+    oper = choice( '+-×÷' )
     if oper == '+':
-        pass
-    else:
-        ASSERT( float(a)/float(b) >= float(c)/float(d) )
-    return [ a, '', c, 'EOL', '──', oper, '──', '=', 'EOL', b, '', d, 'EOL' ]
+        x, y, z = simplify( _b*_f+_c*_e, _c*_f )
+    elif oper == '-':
+        ASSERT( float(a)+float(b)/float(c) >= float(d)+float(e)/float(f) )  # 不允许负数
+        x, y, z = simplify( _b*_f-_c*_e, _c*_f )
+    elif oper == '×':
+        x, y, z = simplify( _b*_e, _e*_f )
+    elif oper == '÷':
+        ASSERT( _e != 0 )
+        x, y, z = simplify( _b*_f, _c*_e )
+    ASSERT( z <= RESULT_DIV_MAX )
+    if a == 0:
+        a = ''
+    if d == 0:
+        d = ''
+    if x == 0:
+        x = ''
+    return [ '',   b,    '', '',   e,   '', '',    y, 'EOL', 
+              a, '──', oper,  d, '──', '=',  x, '──', 'EOL',
+             '',   c,    '', '',   f,   '', '',    z, 'EOL' ]
 '''],
 
 ]
