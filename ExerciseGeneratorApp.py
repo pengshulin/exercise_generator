@@ -20,10 +20,11 @@ import pypinyin
 from pypinyin import pinyin, lazy_pinyin
 from genxword.control import Genxword
 from genxword.calculate import Crossword
+import traceback
 
 
 ABOUT_INFO = '''\
-Python自动出题程序 V1.4
+Python自动出题程序 V1.5
 将生成结果复制粘帖到Excel/WPS中排版
 
 规则说明：
@@ -39,7 +40,7 @@ Python自动出题程序 V1.4
 
 
 URL: https://github.com/pengshulin/exercise_generator
-Peng Shullin <trees_peng@163.com> 2017
+Peng Shullin <trees_peng@163.com> 2019
 '''
 
 CONFIGS_LIST = [
@@ -635,7 +636,7 @@ while blank_counter < BLANK_NUM:
     blank_counter += 1 
 
 print SELECTED_WORDS
-OUTPUT = ''.join([str(i) for i in LIST]).splitlines()
+OUTPUT = ''.join([unicode(i) for i in LIST]).splitlines()
 def generator():
     global OUTPUT
     if not OUTPUT:
@@ -864,6 +865,33 @@ def getRMBName(m):
     else:
         return '%d元'% (floor(m)) 
 
+def check_traceback_for_errline(e):
+    #traceback.print_exc(sys.stdout)
+    err = []
+    for line in traceback.format_exc().splitlines():
+        line = line.rstrip()
+        if line:
+            err.append(line)
+    err_info = err.pop()
+    err_file, err_line, err_module = None, None, None
+    while err:
+        l = err.pop()
+        try:
+            if not l.startswith('  File '):
+                continue
+        except UnicodeDecodeError:
+            continue
+        try:
+            _file, _line, _module = l.split(', ')
+        except ValueError:
+            _file, _line = l.split(', ')
+            _module = '<module>'
+        err_module = _module.lstrip('in ')
+        if err_module == '<module>':
+            err_file = _file.lstrip('  File ')
+            err_line = int(_line.lstrip('line '))
+            break
+    return err_line
 
 
 class MainDialog(MyDialog):
@@ -888,6 +916,8 @@ class MainDialog(MyDialog):
         tp = self.combo_box_type.GetValue()
         if CONFIGS_DICT.has_key(tp):
             self.text_ctrl_rules.SetValue( CONFIGS_DICT[tp] )
+            self.text_ctrl_rules.EmptyUndoBuffer()
+            self.text_ctrl_rules.MarkerDeleteAll(0)
             self.button_generate.Enable(True)
         else:
             self.button_generate.Enable(False)
@@ -924,6 +954,7 @@ class MainDialog(MyDialog):
  
     def OnGenerate(self, event):
         self.info('')
+        self.text_ctrl_rules.MarkerDeleteAll(0)
         rules = self.text_ctrl_rules.GetValue()
         try:
             num = int(self.text_ctrl_number.GetValue())
@@ -937,7 +968,18 @@ class MainDialog(MyDialog):
             code = compile(rules, '', 'exec')
             exec( code )
             generator
+        except StopError as e:
+            err_line = check_traceback_for_errline(e)
+            if err_line is not None:
+                self.text_ctrl_rules.MarkerAdd( err_line-1, 0 )
+                self.text_ctrl_rules.GotoLine( err_line-1 )
+            self.info(unicode(e), wx.ICON_ERROR)
+            return
         except Exception as e:
+            err_line = check_traceback_for_errline(e)
+            if err_line is not None:
+                self.text_ctrl_rules.MarkerAdd( err_line-1, 0 )
+                self.text_ctrl_rules.GotoLine( err_line-1 )
             self.info(unicode(e), wx.ICON_ERROR)
             return
         self.clrAllResult()
@@ -950,9 +992,17 @@ class MainDialog(MyDialog):
             except AssertError:
                 pass
             except StopError as e:
+                err_line = check_traceback_for_errline(e)
+                if err_line is not None:
+                    self.text_ctrl_rules.MarkerAdd( err_line-1, 0 )
+                    self.text_ctrl_rules.GotoLine( err_line-1 )
                 self.info(unicode(e), wx.ICON_ERROR)
                 break
             except Exception as e:
+                err_line = check_traceback_for_errline(e)
+                if err_line is not None:
+                    self.text_ctrl_rules.MarkerAdd( err_line-1, 0 )
+                    self.text_ctrl_rules.GotoLine( err_line-1 )
                 self.info(unicode(e))
                 return
         t1 = time.time()
@@ -994,6 +1044,12 @@ class MainDialog(MyDialog):
         ctrl.SetKeyWords(0, " ".join(keyword.kwlist))
         ctrl.SetProperty("tab.timmy.whinge.level", "1")
         ctrl.SetMargins(0,0)
+        ctrl.SetIndent(4)
+        ctrl.SetIndentationGuides(True)
+        ctrl.SetBackSpaceUnIndents(True)
+        ctrl.SetTabIndents(True)
+        ctrl.SetTabWidth(4)
+        ctrl.SetUseTabs(False)
         ctrl.SetViewWhiteSpace(False)
         ctrl.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         ctrl.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(helv)s,size:%(size)d" % faces)
@@ -1019,8 +1075,12 @@ class MainDialog(MyDialog):
         ctrl.StyleSetSpec(wx.stc.STC_P_STRINGEOL, "fore:#000000,face:%(mono)s,back:#E0C0E0,eol,size:%(size)d" % faces)
         ctrl.SetCaretForeground("BLACK")
         ctrl.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
-        ctrl.SetMarginWidth(1, 40)
-    
+        ctrl.SetMarginWidth(1, 50)
+        ctrl.MarkerDefine(0, wx.stc.STC_MARK_ARROW, "blue", "blue")
+        self.SetAcceleratorTable(wx.AcceleratorTable([ 
+            (wx.ACCEL_NORMAL, wx.WXK_F5,  self.button_generate.GetId()),  # run
+            ]))
+ 
 
     def OnUpdateUI(self, evt):
         ctrl = self.text_ctrl_rules

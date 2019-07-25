@@ -19,6 +19,6 @@ Python练习题生成器
 
 URL: <https://github.com/pengshulin/exercise_generator>
 
-Peng Shullin <trees_peng@163.com> 2017
+Peng Shullin <trees_peng@163.com> 2019
 
 

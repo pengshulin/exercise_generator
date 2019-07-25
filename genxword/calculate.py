@@ -20,7 +20,7 @@
 # along with genxword.  If not, see <http://www.gnu.org/licenses/gpl.html>.
 
 #from gi.repository import Pango, PangoCairo
-import random, time, cairo
+import random, time #, cairo
 from operator import itemgetter
 from collections import defaultdict
 
@@ -220,59 +220,59 @@ class Exportfiles(object):
         PangoCairo.update_layout(context, layout)
         PangoCairo.show_layout(context, layout)
 
-    def create_img(self, name, RTL):
-        px = 28
-        if name.endswith('png'):
-            surface = cairo.ImageSurface(cairo.FORMAT_RGB24, 10+(self.cols*px), 10+(self.rows*px))
-        else:
-            surface = cairo.SVGSurface(name, 10+(self.cols*px), 10+(self.rows*px))
-        context = cairo.Context(surface)
-        context.set_source_rgb(1, 1, 1)
-        context.rectangle(0, 0, 10+(self.cols*px), 10+(self.rows*px))
-        context.fill()
-        self.draw_img(name, context, 28, 5, 5, RTL)
-        if name.endswith('png'):
-            surface.write_to_png(name)
-        else:
-            context.show_page()
-            surface.finish()
+    #def create_img(self, name, RTL):
+    #    px = 28
+    #    if name.endswith('png'):
+    #        surface = cairo.ImageSurface(cairo.FORMAT_RGB24, 10+(self.cols*px), 10+(self.rows*px))
+    #    else:
+    #        surface = cairo.SVGSurface(name, 10+(self.cols*px), 10+(self.rows*px))
+    #    context = cairo.Context(surface)
+    #    context.set_source_rgb(1, 1, 1)
+    #    context.rectangle(0, 0, 10+(self.cols*px), 10+(self.rows*px))
+    #    context.fill()
+    #    self.draw_img(name, context, 28, 5, 5, RTL)
+    #    if name.endswith('png'):
+    #        surface.write_to_png(name)
+    #    else:
+    #        context.show_page()
+    #        surface.finish()
 
-    def export_pdf(self, xwname, filetype, lang, RTL, width=595, height=842):
-        px, xoffset, yoffset = 28, 36, 72
-        name = xwname + filetype
-        surface = cairo.PDFSurface(name, width, height)
-        context = cairo.Context(surface)
-        context.set_source_rgb(1, 1, 1)
-        context.rectangle(0, 0, width, height)
-        context.fill()
-        context.save()
-        sc_ratio = float(width-(xoffset*2))/(px*self.cols)
-        if self.cols <= 21:
-            sc_ratio, xoffset = 0.8, float(1.25*width-(px*self.cols))/2
-        context.scale(sc_ratio, sc_ratio)
-        self.draw_img(name, context, 28, xoffset, 80, RTL)
-        context.restore()
-        context.set_source_rgb(0, 0, 0)
-        self.draw_letters(xwname, context, round((width-len(xwname)*10)/2), yoffset/2, 'Sans 14 bold')
-        x, y = 36, yoffset+5+(self.rows*px*sc_ratio)
-        clues = self.wrap(self.legend(lang))
-        self.draw_letters(lang[0], context, x, y, 'Sans 12 bold')
-        for line in clues.splitlines()[3:]:
-            if y >= height-(yoffset/2)-15:
-                context.show_page()
-                y = yoffset/2
-            if line.strip() == lang[1]:
-                if self.cols > 17 and y > 700:
-                    context.show_page()
-                    y = yoffset/2
-                y += 8
-                self.draw_letters(lang[1], context, x, y+15, 'Sans 12 bold')
-                y += 16
-                continue
-            self.draw_letters(line, context, x, y+18, 'Serif 9')
-            y += 16
-        context.show_page()
-        surface.finish()
+    #def export_pdf(self, xwname, filetype, lang, RTL, width=595, height=842):
+    #    px, xoffset, yoffset = 28, 36, 72
+    #    name = xwname + filetype
+    #    surface = cairo.PDFSurface(name, width, height)
+    #    context = cairo.Context(surface)
+    #    context.set_source_rgb(1, 1, 1)
+    #    context.rectangle(0, 0, width, height)
+    #    context.fill()
+    #    context.save()
+    #    sc_ratio = float(width-(xoffset*2))/(px*self.cols)
+    #    if self.cols <= 21:
+    #        sc_ratio, xoffset = 0.8, float(1.25*width-(px*self.cols))/2
+    #    context.scale(sc_ratio, sc_ratio)
+    #    self.draw_img(name, context, 28, xoffset, 80, RTL)
+    #    context.restore()
+    #    context.set_source_rgb(0, 0, 0)
+    #    self.draw_letters(xwname, context, round((width-len(xwname)*10)/2), yoffset/2, 'Sans 14 bold')
+    #    x, y = 36, yoffset+5+(self.rows*px*sc_ratio)
+    #    clues = self.wrap(self.legend(lang))
+    #    self.draw_letters(lang[0], context, x, y, 'Sans 12 bold')
+    #    for line in clues.splitlines()[3:]:
+    #        if y >= height-(yoffset/2)-15:
+    #            context.show_page()
+    #            y = yoffset/2
+    #        if line.strip() == lang[1]:
+    #            if self.cols > 17 and y > 700:
+    #                context.show_page()
+    #                y = yoffset/2
+    #            y += 8
+    #            self.draw_letters(lang[1], context, x, y+15, 'Sans 12 bold')
+    #            y += 16
+    #            continue
+    #        self.draw_letters(line, context, x, y+18, 'Serif 9')
+    #        y += 16
+    #    context.show_page()
+    #    surface.finish()
 
     def create_files(self, name, save_format, lang, message):
         if Pango.find_base_dir(self.wordlist[0][0], -1) == Pango.Direction.RTL:
